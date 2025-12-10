@@ -20,6 +20,10 @@ public class ApiResponse<T> {
         return new ApiResponse<>(200, "성공", data);
     }
 
+    public static <T> ApiResponse<T> success(T data, String message) {
+        return new ApiResponse<>(200, message, data);
+    }
+
     public static <T> ApiResponse<T> success() {
         return new ApiResponse<>(200, "성공", null);
     }

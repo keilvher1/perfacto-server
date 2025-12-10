@@ -86,7 +86,7 @@ public class Place extends BaseEntity {
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Review> reviews = new ArrayList<>();
+    private List<PerfactoReview> reviews = new ArrayList<>();
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -139,7 +139,7 @@ public class Place extends BaseEntity {
             return 0.0;
         }
         return reviews.stream()
-            .mapToDouble(Review::getRating)
+            .mapToDouble(PerfactoReview::getRating)
             .average()
             .orElse(0.0);
     }
