@@ -9,7 +9,9 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Setter
@@ -71,6 +73,24 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user")
     private List<SavedTheme> likes = new ArrayList<>();
 
+    // 소셜 기능 추가
+    @Setter
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer followingCount = 0; // 팔로잉 수
+
+    @Setter
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer followerCount = 0; // 팔로워 수
+
+    // 방문한 폴리곤 ID 목록 (맵 컬러링용, 콤마로 구분하여 저장)
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_visited_polygons", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "polygon_id")
+    @Builder.Default
+    private Set<Long> visitedPolygons = new HashSet<>();
+
     // TODO: 추후 성별, 생일 받으면 빌더 타입 수정해야함.
     public static User from(UserDto dto){
         return User.builder()
@@ -81,12 +101,46 @@ public class User extends BaseEntity {
                 .email(dto.getEmail())
                 .profileImageUrl(dto.getProfileImageUrl())
                 .role(Role.ROLE_USER) // 기본 권한 설정
+                .followingCount(0)
+                .followerCount(0)
                 .build();
     }
     public static User addReviewFrom(User user) {
         user.setPoint(user.getPoint() + 500); // 포인트 500 증가
         user.setCount(user.getCount() + 1);   // 리뷰 횟수 1 증가
         return user;
+    }
+
+    // 팔로잉 수 증가
+    public void incrementFollowingCount() {
+        this.followingCount++;
+    }
+
+    // 팔로잉 수 감소
+    public void decrementFollowingCount() {
+        if (this.followingCount > 0) {
+            this.followingCount--;
+        }
+    }
+
+    // 팔로워 수 증가
+    public void incrementFollowerCount() {
+        this.followerCount++;
+    }
+
+    // 팔로워 수 감소
+    public void decrementFollowerCount() {
+        if (this.followerCount > 0) {
+            this.followerCount--;
+        }
+    }
+
+    // 방문한 폴리곤 추가
+    public void addVisitedPolygon(Long polygonId) {
+        if (this.visitedPolygons == null) {
+            this.visitedPolygons = new HashSet<>();
+        }
+        this.visitedPolygons.add(polygonId);
     }
 
 }
