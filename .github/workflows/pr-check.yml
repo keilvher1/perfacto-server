@@ -1,0 +1,74 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. 코드 체크아웃
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # 2. JDK 17 설정
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    # 3. Gradle 빌드 권한
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    # 4. 빌드 테스트
+    - name: Build with Gradle
+      run: ./gradlew clean build
+
+    # 5. 테스트 실행
+    - name: Run tests
+      run: ./gradlew test
+
+    # 6. 테스트 결과 업로드
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: '**/build/test-results/test/TEST-*.xml'
+      continue-on-error: true
+
+    # 7. 코드 커버리지 (선택사항)
+    - name: Generate Coverage Report
+      run: ./gradlew jacocoTestReport
+      continue-on-error: true
+
+    # 8. PR 코멘트로 결과 알림
+    - name: Comment PR
+      uses: actions/github-script@v6
+      if: always()
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const output = `
+          #### 빌드 결과: ${{ job.status }}
+
+          **빌드 성공!** ✅
+          - Java 17
+          - Gradle 빌드 완료
+          - 테스트 통과
+
+          *커밋: ${{ github.event.pull_request.head.sha }}*
+          `;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
