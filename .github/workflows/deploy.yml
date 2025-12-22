@@ -38,30 +38,20 @@ jobs:
       run: ./gradlew test
       continue-on-error: true
 
-    # 6. Docker Hub 로그인
-    - name: Log in to Docker Hub
+    # 6. JAR 파일을 EC2로 전송 및 배포
+    - name: Deploy JAR to EC2
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: docker/login-action@v2
+      uses: appleboy/scp-action@master
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "build/libs/*.jar"
+        target: "~/perfacto-server"
+        strip_components: 2
 
-    # 7. Docker 이미지 빌드
-    - name: Build Docker image
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/spring-backend:latest .
-        docker tag ${{ secrets.DOCKER_USERNAME }}/spring-backend:latest ${{ secrets.DOCKER_USERNAME }}/spring-backend:${{ github.sha }}
-
-    # 8. Docker 이미지 푸시
-    - name: Push Docker image
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/spring-backend:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/spring-backend:${{ github.sha }}
-
-    # 9. EC2 서버에 배포
-    - name: Deploy to EC2
+    # 7. EC2에서 애플리케이션 재시작
+    - name: Restart Application on EC2
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: appleboy/ssh-action@master
       with:
@@ -69,13 +59,23 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          cd /home/ubuntu/perfacto-server || cd ~/perfacto-server
-          docker-compose pull
-          docker-compose down
-          docker-compose up -d
-          docker image prune -f
+          # 기존 프로세스 종료
+          pkill -f 'java -jar' || true
 
-    # 10. Slack 알림 (선택사항)
+          # 새 JAR로 애플리케이션 시작
+          cd ~/perfacto-server
+          nohup java -jar *.jar > app.log 2>&1 &
+
+          # 애플리케이션 시작 확인
+          sleep 5
+          if pgrep -f 'java -jar' > /dev/null; then
+            echo "Application started successfully"
+          else
+            echo "Application failed to start"
+            exit 1
+          fi
+
+    # 8. Slack 알림 (선택사항)
     - name: Notify Slack on success
       if: success() && github.ref == 'refs/heads/main'
       uses: 8398a7/action-slack@v3
