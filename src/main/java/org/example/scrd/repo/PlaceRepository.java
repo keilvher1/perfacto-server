@@ -73,6 +73,34 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     List<Place> findTopPlacesByRating(Pageable pageable);
 
     /**
+     * ELO 랭킹 상위 장소 조회 (전체)
+     */
+    @Query("SELECT p FROM Place p WHERE p.isActive = true ORDER BY p.eloRating DESC")
+    List<Place> findTopPlacesByEloRating(Pageable pageable);
+
+    /**
+     * ELO 랭킹 상위 장소 조회 (카테고리별)
+     */
+    @Query("SELECT p FROM Place p WHERE p.isActive = true AND p.category.id = :categoryId ORDER BY p.eloRating DESC")
+    List<Place> findTopPlacesByEloRatingWithCategory(@Param("categoryId") Long categoryId, Pageable pageable);
+
+    /**
+     * ELO 랭킹 상위 장소 조회 (구역별)
+     */
+    @Query("SELECT p FROM Place p WHERE p.isActive = true AND p.district = :district ORDER BY p.eloRating DESC")
+    List<Place> findTopPlacesByEloRatingWithDistrict(@Param("district") String district, Pageable pageable);
+
+    /**
+     * ELO 랭킹 상위 장소 조회 (카테고리 + 구역)
+     */
+    @Query("SELECT p FROM Place p WHERE p.isActive = true AND p.category.id = :categoryId AND p.district = :district ORDER BY p.eloRating DESC")
+    List<Place> findTopPlacesByEloRatingWithCategoryAndDistrict(
+        @Param("categoryId") Long categoryId,
+        @Param("district") String district,
+        Pageable pageable
+    );
+
+    /**
      * 위치 기반 반경 검색 (Haversine formula)
      * @param latitude 중심 위도
      * @param longitude 중심 경도

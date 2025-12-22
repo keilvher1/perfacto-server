@@ -73,6 +73,10 @@ public class Place extends BaseEntity {
 
     @Builder.Default
     @Column(nullable = false)
+    private Integer eloRating = 1200; // ELO 랭킹 점수 (기본값 1200)
+
+    @Builder.Default
+    @Column(nullable = false)
     private Boolean isActive = true; // 활성화 여부
 
     @ManyToOne(fetch = FetchType.LAZY)

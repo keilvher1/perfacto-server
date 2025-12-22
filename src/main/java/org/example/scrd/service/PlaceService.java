@@ -237,6 +237,34 @@ public class PlaceService {
     }
 
     /**
+     * ELO 랭킹 기반 장소 조회
+     */
+    public List<PlaceResponse> getRankingPlaces(Long categoryId, String district, int limit) {
+        log.info("Getting ranking places - categoryId: {}, district: {}, limit: {}", categoryId, district, limit);
+
+        Pageable pageable = Pageable.ofSize(limit);
+        List<Place> places;
+
+        if (categoryId != null && district != null) {
+            // 카테고리와 구역 모두 필터링
+            places = placeRepository.findTopPlacesByEloRatingWithCategoryAndDistrict(categoryId, district, pageable);
+        } else if (categoryId != null) {
+            // 카테고리만 필터링
+            places = placeRepository.findTopPlacesByEloRatingWithCategory(categoryId, pageable);
+        } else if (district != null) {
+            // 구역만 필터링
+            places = placeRepository.findTopPlacesByEloRatingWithDistrict(district, pageable);
+        } else {
+            // 필터링 없이 전체 조회
+            places = placeRepository.findTopPlacesByEloRating(pageable);
+        }
+
+        return places.stream()
+            .map(PlaceResponse::fromSimple)
+            .collect(Collectors.toList());
+    }
+
+    /**
      * 위치 기반 주변 장소 검색
      */
     public List<PlaceResponse> getNearbyPlaces(Double latitude, Double longitude, Double radiusKm) {

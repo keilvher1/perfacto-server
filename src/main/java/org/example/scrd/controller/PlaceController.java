@@ -184,6 +184,20 @@ public class PlaceController {
     }
 
     /**
+     * ELO 랭킹 기반 장소 조회
+     * GET /perfacto/api/places/ranking?categoryId=1&district=남구&limit=50
+     */
+    @GetMapping("/ranking")
+    public ResponseEntity<ApiResponse<List<PlaceResponse>>> getRankingPlaces(
+        @RequestParam(required = false) Long categoryId,
+        @RequestParam(required = false) String district,
+        @RequestParam(defaultValue = "50") int limit
+    ) {
+        List<PlaceResponse> response = placeService.getRankingPlaces(categoryId, district, limit);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
      * 위치 기반 주변 장소 검색
      * GET /perfacto/api/places/nearby?lat=36.019&lon=129.343&radius=5
      */
