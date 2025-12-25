@@ -13,7 +13,7 @@ import java.util.List;
  * 팔로우 컨트롤러
  */
 @RestController
-@RequestMapping("/api/follow")
+@RequestMapping("/perfacto/api/follows")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class FollowController {

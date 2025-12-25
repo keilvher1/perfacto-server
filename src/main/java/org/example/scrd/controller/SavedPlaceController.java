@@ -15,7 +15,7 @@ import java.util.Map;
  * 저장된 장소 컨트롤러
  */
 @RestController
-@RequestMapping("/api/saved-places")
+@RequestMapping("/perfacto/api/saved-places")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class SavedPlaceController {
