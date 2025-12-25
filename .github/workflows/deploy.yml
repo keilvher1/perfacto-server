@@ -67,11 +67,12 @@ jobs:
           nohup java -jar *.jar > app.log 2>&1 &
 
           # 애플리케이션 시작 확인
-          sleep 5
+          sleep 15
           if pgrep -f 'java -jar' > /dev/null; then
             echo "Application started successfully"
           else
             echo "Application failed to start"
+            cat ~/perfacto-server/app.log
             exit 1
           fi
 
