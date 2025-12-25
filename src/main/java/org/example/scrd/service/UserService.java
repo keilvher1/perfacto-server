@@ -12,6 +12,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -59,6 +63,32 @@ public class UserService {
         }
 
         foundUser.setNickName(newNick);
+    }
+
+    /**
+     * 사용자 검색 (닉네임 또는 이름으로 검색)
+     */
+    public List<UserResponse> searchUsers(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String trimmedQuery = query.trim();
+        List<User> users = userRepository
+                .findByNickNameContainingIgnoreCaseOrNameContainingIgnoreCase(trimmedQuery, trimmedQuery);
+
+        return users.stream()
+                .map(UserResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 사용자 ID로 사용자 정보 조회
+     */
+    public UserResponse getUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("해당 사용자가 존재하지 않습니다."));
+        return UserResponse.from(user);
     }
 
 }

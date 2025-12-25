@@ -73,4 +73,16 @@ public class SavedPlaceController {
         boolean isSaved = savedPlaceService.isSaved(userId, placeId);
         return ResponseEntity.ok(isSaved);
     }
+
+    /**
+     * 특정 사용자의 저장한 장소 + 리뷰 남긴 장소 조회 (중복 제거)
+     * GET /api/saved-places/user/{userId}
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Place>> getUserPlaces(
+            @PathVariable Long userId
+    ) {
+        List<Place> places = savedPlaceService.getUserPlaces(userId);
+        return ResponseEntity.ok(places);
+    }
 }

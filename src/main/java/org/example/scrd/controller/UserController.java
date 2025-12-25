@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/perfacto/api/user")
 @RequiredArgsConstructor
@@ -42,5 +44,26 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success());
     }
 
+    /**
+     * 사용자 검색 (닉네임 또는 이름으로 검색)
+     * GET /perfacto/api/user/search?query={검색어}
+     */
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<UserResponse>>> searchUsers(
+            @RequestParam String query) {
+        List<UserResponse> users = userService.searchUsers(query);
+        return ResponseEntity.ok(ApiResponse.success(users));
+    }
+
+    /**
+     * 특정 사용자 정보 조회
+     * GET /perfacto/api/user/{userId}
+     */
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponse<UserResponse>> getUserById(
+            @PathVariable Long userId) {
+        UserResponse user = userService.getUserById(userId);
+        return ResponseEntity.ok(ApiResponse.success(user));
+    }
 
 }

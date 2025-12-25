@@ -1,16 +1,21 @@
 package org.example.scrd.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.scrd.domain.PerfactoReview;
 import org.example.scrd.domain.Place;
 import org.example.scrd.domain.SavedPlace;
 import org.example.scrd.domain.User;
+import org.example.scrd.repo.PerfactoReviewRepository;
 import org.example.scrd.repo.PlaceRepository;
 import org.example.scrd.repo.SavedPlaceRepository;
 import org.example.scrd.repo.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +29,7 @@ public class SavedPlaceService {
     private final SavedPlaceRepository savedPlaceRepository;
     private final PlaceRepository placeRepository;
     private final UserRepository userRepository;
+    private final PerfactoReviewRepository perfactoReviewRepository;
 
     /**
      * 장소 저장
@@ -87,5 +93,27 @@ public class SavedPlaceService {
             .orElseThrow(() -> new IllegalArgumentException("장소를 찾을 수 없습니다."));
 
         return savedPlaceRepository.existsByUserAndPlace(user, place);
+    }
+
+    /**
+     * 특정 사용자의 저장한 장소 + 리뷰 남긴 장소 조회 (중복 제거)
+     * 저장한 장소가 우선 순위
+     */
+    public List<Place> getUserPlaces(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // LinkedHashSet을 사용하여 순서를 유지하면서 중복 제거
+        Set<Place> placeSet = new LinkedHashSet<>();
+
+        // 1. 저장한 장소 추가 (우선 순위)
+        List<SavedPlace> savedPlaces = savedPlaceRepository.findAllByUserOrderByRegDateDesc(user);
+        savedPlaces.forEach(savedPlace -> placeSet.add(savedPlace.getPlace()));
+
+        // 2. 리뷰 남긴 장소 추가
+        List<PerfactoReview> reviews = perfactoReviewRepository.findAllByUserOrderByRegDateDesc(user);
+        reviews.forEach(review -> placeSet.add(review.getPlace()));
+
+        return new ArrayList<>(placeSet);
     }
 }

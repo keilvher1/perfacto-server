@@ -8,6 +8,7 @@ import org.example.scrd.dto.Tier;
 @NoArgsConstructor
 @Getter
 public class UserResponse {
+    private Long id;
     private String name;
     private String nickName;
     private String email;
@@ -17,9 +18,12 @@ public class UserResponse {
     private String birth;
     private int point;
     private int count;
+    private Integer followingCount;
+    private Integer followerCount;
 
     public static UserResponse from(User user) {
         UserResponse response = new UserResponse();
+        response.id = user.getId();
         response.name = user.getName();
         response.nickName = user.getNickName();
         response.email = user.getEmail();
@@ -29,6 +33,8 @@ public class UserResponse {
         response.birth = user.getBirth();
         response.point = user.getPoint();
         response.count = user.getCount();
+        response.followingCount = user.getFollowingCount();
+        response.followerCount = user.getFollowerCount();
         return response;
     }
 }

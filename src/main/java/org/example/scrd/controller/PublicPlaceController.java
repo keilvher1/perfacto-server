@@ -106,4 +106,18 @@ public class PublicPlaceController {
         List<PlaceResponse> places = placeService.getTopRatedPlaces(limit);
         return ResponseEntity.ok(ApiResponse.success(places));
     }
+
+    /**
+     * ELO 랭킹 기반 장소 조회 (Public)
+     * GET /perfacto/every/places/ranking?categoryId=1&district=남구&limit=50
+     */
+    @GetMapping("/places/ranking")
+    public ResponseEntity<ApiResponse<List<PlaceResponse>>> getRankingPlaces(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String district,
+            @RequestParam(defaultValue = "50") int limit) {
+
+        List<PlaceResponse> places = placeService.getRankingPlaces(categoryId, district, limit);
+        return ResponseEntity.ok(ApiResponse.success(places));
+    }
 }
