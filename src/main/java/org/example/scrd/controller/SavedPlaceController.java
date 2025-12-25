@@ -2,6 +2,7 @@ package org.example.scrd.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.scrd.domain.Place;
+import org.example.scrd.controller.response.ApiResponse;
 import org.example.scrd.service.SavedPlaceService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,7 +26,7 @@ public class SavedPlaceController {
      * 장소 저장
      */
     @PostMapping
-    public ResponseEntity<Void> savePlace(
+    public ResponseEntity<ApiResponse<Void>> savePlace(
             @RequestBody Map<String, Object> request,
             Authentication authentication
     ) {
@@ -33,45 +34,45 @@ public class SavedPlaceController {
         Long placeId = Long.parseLong(request.get("placeId").toString());
         String memo = (String) request.get("memo");
         savedPlaceService.savePlace(userId, placeId, memo);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     /**
      * 장소 저장 취소
      */
     @DeleteMapping("/{placeId}")
-    public ResponseEntity<Void> unsavePlace(
+    public ResponseEntity<ApiResponse<Void>> unsavePlace(
             @PathVariable Long placeId,
             Authentication authentication
     ) {
         Long userId = Long.parseLong(authentication.getName());
         savedPlaceService.unsavePlace(userId, placeId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     /**
      * 저장된 장소 목록 조회
      */
     @GetMapping
-    public ResponseEntity<List<Place>> getSavedPlaces(
+    public ResponseEntity<ApiResponse<List<Place>>> getSavedPlaces(
             Authentication authentication
     ) {
         Long userId = Long.parseLong(authentication.getName());
         List<Place> places = savedPlaceService.getSavedPlaces(userId);
-        return ResponseEntity.ok(places);
+        return ResponseEntity.ok(ApiResponse.success(places));
     }
 
     /**
      * 저장 여부 확인
      */
     @GetMapping("/check/{placeId}")
-    public ResponseEntity<Boolean> checkSaved(
+    public ResponseEntity<ApiResponse<Boolean>> checkSaved(
             @PathVariable Long placeId,
             Authentication authentication
     ) {
         Long userId = Long.parseLong(authentication.getName());
         boolean isSaved = savedPlaceService.isSaved(userId, placeId);
-        return ResponseEntity.ok(isSaved);
+        return ResponseEntity.ok(ApiResponse.success(isSaved));
     }
 
     /**
@@ -79,10 +80,10 @@ public class SavedPlaceController {
      * GET /api/saved-places/user/{userId}
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Place>> getUserPlaces(
+    public ResponseEntity<ApiResponse<List<Place>>> getUserPlaces(
             @PathVariable Long userId
     ) {
         List<Place> places = savedPlaceService.getUserPlaces(userId);
-        return ResponseEntity.ok(places);
+        return ResponseEntity.ok(ApiResponse.success(places));
     }
 }
