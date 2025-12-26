@@ -59,10 +59,8 @@ jobs:
 
           # 새 JAR로 애플리케이션 시작
           cd ~/perfacto-server
-          nohup java -jar *.jar > app.log 2>&1 &
+          nohup java -jar *.jar > app.log 2>&1 < /dev/null &
 
-          # 애플리케이션 시작 대기
-          sleep 5
           echo "Deployment completed"
 
     # 8. Slack 알림 (선택사항)
